@@ -1,0 +1,6 @@
+-r requirements.txt
+torch>=2.2
+stable-baselines3>=2.3
+gymnasium>=0.29
+yfinance>=0.2.40
+pandas-datareader>=0.10
