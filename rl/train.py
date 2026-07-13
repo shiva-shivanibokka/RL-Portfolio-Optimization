@@ -4,11 +4,17 @@ import numpy as np
 import pandas as pd
 from data.UNIVERSE import TICKERS, TRAIN_END, DATA_START, LOOKBACK
 
+# Reward = log_return - lambda_risk * ex_ante_portfolio_vol - lambda_cost * cost * turnover.
+# lambda_risk is the risk-aversion knob: higher -> the agent tilts to lower ex-ante
+# volatility (bonds/gold, diversification). Calibrated against the ex-ante-vol reward
+# (portfolio vol ~1e-2 scale) so the three profiles span a real defensive->equity gradient.
 PROFILE_PARAMS = {
-    "conservative": {"lambda_risk": 8.0, "lambda_cost": 4.0},
-    "balanced":     {"lambda_risk": 2.0, "lambda_cost": 1.0},
-    "aggressive":   {"lambda_risk": 0.1, "lambda_cost": 0.1},
+    "conservative": {"lambda_risk": 100.0, "lambda_cost": 0.5},
+    "balanced":     {"lambda_risk": 12.0,  "lambda_cost": 0.3},
+    "aggressive":   {"lambda_risk": 0.0,   "lambda_cost": 0.1},
 }
+
+TIMESTEPS = 200_000
 
 
 def _train_returns():
@@ -49,7 +55,7 @@ def main():
     os.makedirs("models", exist_ok=True)
     train_returns = _train_returns()
     for profile in PROFILE_PARAMS:
-        model = train_profile(profile, train_returns)
+        model = train_profile(profile, train_returns, timesteps=TIMESTEPS)
         layers = export_policy(model)
         path = f"models/{profile}.npz"
         np.savez(path,
