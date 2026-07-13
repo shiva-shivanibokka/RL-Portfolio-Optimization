@@ -1,7 +1,7 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/backtest.py": {
-      "runtime": "python3.12",
       "includeFiles": "{rl/**,data/**,models/**}"
     }
   }

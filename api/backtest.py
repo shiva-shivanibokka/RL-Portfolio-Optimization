@@ -2,15 +2,19 @@
 Serve-time deps: numpy, pandas only."""
 import json
 import os
+import sys
 from http.server import BaseHTTPRequestHandler
 
 import pandas as pd
+
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
 
 from rl.backtest import run_backtest, equal_weight_backtest, buy_and_hold
 from rl.policy import NumpyMLPPolicy
 from data.UNIVERSE import TICKERS, PROFILES, LOOKBACK, OOS_START
 
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _PRICES = None
 _POLICIES = {}
 
@@ -34,7 +38,7 @@ def handle(body: dict):
         return 400, {"error": "request body must be a JSON object"}
     profile = body.get("profile")
     rebalance = body.get("rebalance", "M")
-    start = body.get("start", OOS_START)
+    start = body.get("start") or OOS_START
     end = body.get("end")
 
     if profile not in PROFILES:
@@ -67,7 +71,10 @@ def handle(body: dict):
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        length = int(self.headers.get("Content-Length", 0))
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+        except ValueError:
+            length = 0
         raw = self.rfile.read(length) if length else b"{}"
         try:
             body = json.loads(raw or b"{}")

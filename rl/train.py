@@ -38,7 +38,7 @@ def export_policy(model):
     return layers
 
 
-def train_profile(profile, train_returns, timesteps=300_000):
+def train_profile(profile, train_returns, timesteps=TIMESTEPS):
     from stable_baselines3 import PPO
     from rl.env import PortfolioEnv
     params = PROFILE_PARAMS[profile]
