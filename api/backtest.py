@@ -30,6 +30,8 @@ def _policy(profile):
 
 
 def handle(body: dict):
+    if not isinstance(body, dict):
+        return 400, {"error": "request body must be a JSON object"}
     profile = body.get("profile")
     rebalance = body.get("rebalance", "M")
     start = body.get("start", OOS_START)
@@ -58,7 +60,8 @@ def handle(body: dict):
         "equal_weight": equal_weight_backtest(base_window, rebalance="M"),
         "spy": buy_and_hold(base_window, "SPY"),
     }
-    assert agent["dates"] == baselines["equal_weight"]["dates"] == baselines["spy"]["dates"]
+    if not (agent["dates"] == baselines["equal_weight"]["dates"] == baselines["spy"]["dates"]):
+        return 500, {"error": "internal alignment error"}
     return 200, {"agent": agent, "baselines": baselines}
 
 

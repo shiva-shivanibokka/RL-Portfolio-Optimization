@@ -1,4 +1,5 @@
 import json
+import pytest
 from api.backtest import handle
 
 
@@ -38,3 +39,11 @@ def test_agent_and_baselines_share_date_axis():
     ad = body["agent"]["dates"]
     assert ad == body["baselines"]["equal_weight"]["dates"] == body["baselines"]["spy"]["dates"]
     assert len(ad) == len(body["agent"]["equity"])
+
+
+@pytest.mark.parametrize("body", [[1, 2, 3], "hello", 42, None])
+def test_non_dict_body_returns_400(body):
+    from api.backtest import handle
+    status, out = handle(body)
+    assert status == 400
+    assert "error" in out
