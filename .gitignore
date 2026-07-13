@@ -9,3 +9,9 @@ node_modules/
 *.zip
 .DS_Store
 next-env.d.ts
+.vercel
+.env*
+
+# planning/audit/todo docs — local only, not published
+TODO.md
+docs/
