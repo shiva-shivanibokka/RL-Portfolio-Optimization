@@ -2,7 +2,7 @@
 
 Interactive reinforcement-learning portfolio allocator — three reward-shaped PPO agents, trained offline on real ETF data, served on Vercel's free tier with zero PyTorch in production.
 
-[**▶ Live demo**](https://rl-portfolio-optimization-shiv-a.vercel.app) &nbsp;·&nbsp; ![Python](https://img.shields.io/badge/Python-3.12-blue) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![Tests](https://img.shields.io/badge/tests-30%20passing-brightgreen) ![Serve deps](https://img.shields.io/badge/serve--time%20deps-numpy%20%2B%20pandas-orange)
+[**▶ Live demo**](https://rl-portfolio-optimization-shiv-a.vercel.app) &nbsp;·&nbsp; ![Python](https://img.shields.io/badge/Python-3.12-blue) ![Next.js](https://img.shields.io/badge/Next.js-15-black) [![Tests](https://img.shields.io/badge/tests-30%20passing%20locally-brightgreen)](#testing) ![Serve deps](https://img.shields.io/badge/serve--time%20deps-numpy%20%2B%20pandas-orange)
 
 ## Recruiter TL;DR
 
@@ -157,11 +157,16 @@ models/*.npz     # committed, exported policy weights (numpy)
 ## Testing
 
 ```bash
+pip install -r requirements-train.txt   # the suite needs the training deps
 pytest        # 29 Python tests: env, backtest, metrics, policy, export-parity, API
 npm test      # frontend component smoke test (Vitest + Testing Library)
 ```
 
+The test suite requires `requirements-train.txt`, not the serve-time `requirements.txt`: `rl/env.py` imports `gymnasium` and the parity test imports `stable_baselines3`. With only the serve-time deps installed, `pytest` fails during **collection** (`ModuleNotFoundError: gymnasium`) and therefore runs **zero** tests rather than reporting failures — a distinction worth knowing before reading a green local run as meaningful.
+
 The parity test (`rl/tests/test_export_parity.py`) is the load-bearing one: it asserts the numpy serve-time policy reproduces Stable-Baselines3's deterministic action within `1e-5`, so the offline→online weight export can't silently drift.
+
+**No CI pipeline is configured for this repo** (see Roadmap). The `tests-30 passing` badge is self-reported, not produced by a hosted run: it is 29 pytest tests plus the 1 Vitest component test, last verified on 2026-10-08 in a clean virtualenv built from `requirements-train.txt`. Treat it as a claim you can reproduce with the two commands above, not as a live build status.
 
 ## Deployment
 
@@ -177,6 +182,7 @@ npx vercel --prod   # promote to production
 ## Roadmap / future work
 
 - **Genuinely competitive RL** — more training timesteps, richer features (momentum, volatility-regime signals), and reward/hyperparameter tuning to actually challenge the passive baselines. RL-for-trading is hard and this is an honest stretch goal, not a promise.
+- **CI pipeline** — a GitHub Actions workflow installing `requirements-train.txt` and running `pytest` + `npm test` on every push, so the test count in the badge becomes a hosted result instead of a self-reported one.
 - **Experiment tracking** — MLflow over the three training runs.
 - **Screenshot / GIF** of the live dashboard in this README.
 - **Minor cleanups** — categorize the remaining three tickers in the results footnote; narrow the broad `except` in `rl/data_pull.py`.
